@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.OpenApi.Services;
 using Tutorial4.Data;
 using Tutorial4.Models;
 
@@ -7,10 +6,10 @@ namespace Tutorial4.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RoomController : ControllerBase
+public class RoomsController : ControllerBase
 {
     [HttpGet]
-    public ActionResult<IEnumerable<Room>> getAll(
+    public ActionResult<IEnumerable<Room>> GetAll(
         [FromQuery] int? minCapacity,
         [FromQuery] bool? hasProjector,
         [FromQuery] bool? activeOnly)
@@ -92,12 +91,18 @@ public class RoomController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    public ActionResult<Room> Delete(int id)
+    public IActionResult Delete(int id)
     {
         var room = CurrMemory.Rooms.FirstOrDefault(r => r.Id == id);
         if (room is null)
         {
             return NotFound();
+        }
+        
+        bool hasReservations = CurrMemory.Reservations.Any(r => r.RoomId == id);
+        if (hasReservations)
+        {
+            return BadRequest("Nie można usunąć sali, która ma przypisane rezerwacje.");
         }
 
         CurrMemory.Rooms.Remove(room);

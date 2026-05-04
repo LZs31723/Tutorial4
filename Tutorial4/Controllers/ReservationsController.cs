@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc;
 using Tutorial4.Data;
 using Tutorial4.Models;
@@ -6,7 +7,7 @@ namespace Tutorial4.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class ReservationController : ControllerBase
+public class ReservationsController : ControllerBase
 {
     [HttpGet]
     public ActionResult<IEnumerable<Reservation>> GetAll(
@@ -60,8 +61,8 @@ public class ReservationController : ControllerBase
         }
         bool hasCol = CurrMemory.Reservations.Any(r => r.RoomId == reservation.RoomId&&
                                                        r.Date == reservation.Date &&
-                                                       r.StartTime==reservation.StartTime&&
-                                                       r.EndTime==reservation.EndTime);
+                                                       r.StartTime < reservation.EndTime&&
+                                                       r.EndTime > reservation.StartTime);
 
         if (hasCol)
         {
@@ -103,8 +104,8 @@ public class ReservationController : ControllerBase
         bool hasCOl = CurrMemory.Reservations.Any(rr => rr.Id != id &&
                                                        rr.RoomId == updatedReservation.RoomId &&
                                                        rr.Date == updatedReservation.Date &&
-                                                       rr.StartTime < reservation.EndTime &&
-                                                       rr.EndTime > reservation.StartTime);
+                                                       rr.StartTime < updatedReservation.EndTime &&
+                                                       rr.EndTime > updatedReservation.StartTime);
 
         if (hasCOl)
         {
@@ -122,7 +123,7 @@ public class ReservationController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    public ActionResult Delete(int id)
+    public IActionResult Delete(int id)
     {
         var reservation = CurrMemory.Reservations.FirstOrDefault(r => r.Id == id);
         if (reservation is null)
@@ -133,7 +134,4 @@ public class ReservationController : ControllerBase
         
         return NoContent();
     }
-     
-  
-    
 }
